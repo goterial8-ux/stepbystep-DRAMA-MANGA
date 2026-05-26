@@ -9,7 +9,7 @@ dotenv.config();
 const app = express();
 app.use(express.json({ limit: "10mb" }));
 
-const PORT = 3000;
+const PORT = Number(process.env.PORT) || 3000;
 
 // Initialize GoogleGenAI client using Vertex AI
 const project = process.env.GOOGLE_CLOUD_PROJECT;
