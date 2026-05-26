@@ -1,0 +1,8 @@
+{
+  "name": "SAMANOVA DRAMA",
+  "description": "A dark cinematic production pipeline tool for creating structured long YouTube drama recap scripts stage-by-stage.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
