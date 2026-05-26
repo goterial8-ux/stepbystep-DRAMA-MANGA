@@ -193,11 +193,11 @@ export default function App() {
     setGenerationError(null);
     const activeKey = STAGES_CONFIG[currentState.activeStageIdx].key;
 
-    // Gather previously approved handoffs to feed as context
+    // Gather previously approved outputs and handoffs to feed as deep context
     const previousHandoffs: Record<string, string> = {};
     STAGES_CONFIG.forEach(cfg => {
       if (cfg.id < currentState.activeStageIdx) {
-        previousHandoffs[cfg.key] = currentState.stages[cfg.key].handoff;
+        previousHandoffs[cfg.key] = `[FULL STAGE OUTPUT COMPLETED BY AI]:\n${currentState.stages[cfg.key].output}\n\n[COMPACT PRODUCER HANDOFF]:\n${currentState.stages[cfg.key].handoff}`;
       }
     });
 
@@ -255,18 +255,19 @@ export default function App() {
     if (!part) return;
 
     // Get the Stage 03 Handoff (Scene matrix)
-    const sceneCardsHandoff = currentState.stages["03_scenes"].handoff;
-    if (!sceneCardsHandoff) {
+    const stage03Handoff = currentState.stages["03_scenes"].handoff;
+    if (!stage03Handoff) {
       setGenerationError("Stage 03 Handoff is required to write final script. Please draft and approve Stage 03 first.");
       setIsGeneratingPart(false);
       return false; // Return success status
     }
+    const sceneCardsHandoff = `[FULL APPROVED STAGE 03 SCENE CARDS OUTPUT]:\n${currentState.stages["03_scenes"].output}\n\n[PRODUCER HANDOFF SUMMARY]:\n${stage03Handoff}`;
 
     // Capture text and memory of previous generated parts so model maintains continuous tone/narrative
     const previousPartsText: string[] = [];
     currentState.scriptParts.forEach(p => {
       if (p.number < partNum && p.output) {
-        let entry = `--- ${p.title} ---\n[LATEST OUTPUT TRUNCATED]:\n${p.output.slice(-2500)}`;
+        let entry = `--- ${p.title} ---\n[FULL OUTPUT]:\n${p.output}`;
         if (p.memory) {
           entry += `\n[MEMORY AND AVOIDANCE LOG FOR THIS PART]:\n${p.memory}`;
         }
@@ -434,10 +435,10 @@ export default function App() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ 
           fullScript,
-          stage03Handoff: state.stages["03_scenes"]?.handoff || "",
-          stage02Handoff: state.stages["02_macro"]?.handoff || "",
-          stage01Handoff: state.stages["01_foundation"]?.handoff || "",
-          stage00Handoff: state.stages["00_idea"]?.handoff || ""
+          stage03Handoff: `[FULL STAGE OUTPUT]:\n${state.stages["03_scenes"]?.output || ""}\n\n[HANDOFF SUMMARY]:\n${state.stages["03_scenes"]?.handoff || ""}`,
+          stage02Handoff: `[FULL STAGE OUTPUT]:\n${state.stages["02_macro"]?.output || ""}\n\n[HANDOFF SUMMARY]:\n${state.stages["02_macro"]?.handoff || ""}`,
+          stage01Handoff: `[FULL STAGE OUTPUT]:\n${state.stages["01_foundation"]?.output || ""}\n\n[HANDOFF SUMMARY]:\n${state.stages["01_foundation"]?.handoff || ""}`,
+          stage00Handoff: `[FULL STAGE OUTPUT]:\n${state.stages["00_idea"]?.output || ""}\n\n[HANDOFF SUMMARY]:\n${state.stages["00_idea"]?.handoff || ""}`
         }),
       });
 
