@@ -75,20 +75,23 @@ async function generateText(prompt: string, systemInstruction?: string, model: s
 \n==================================================
 FLASH PRO REASONING EMULATOR (HIGH THINKING ACTIVE)
 ==================================================
-To simulate Gemini 3.1 Pro premium logical planning and rule tracking, you MUST run a deep mental thread before outputting the final content.
+To simulate Gemini 3.1 Pro premium logical planning, rule tracking, and deep long-form writing capabilities, you MUST run a deep mental thread before outputting the final content.
 You MUST format your output with a clean, detailed <thought> block on the very first line of your response.
 
 Inside the <thought> block, explicitly list in English or Russian:
 1. TARGET GOAL & LANGUAGE AUDIT (English with Japanese names, Russian, etc.)
 2. STRICT BANS CHECK: No adjective bloat, no flowery metaphors, first-person "I" active narrator (not passive), sibling protective loyalty and cynical/protective emotion.
 3. LOGICAL CONTINUITY: Outline of the exact steps/sections to satisfy.
-4. SELF-QA REFINEMENT: Mentally preview your narrative, identify and fix any weak sentences or default clichés.
+4. HIGH-DENSITY WRITING CONTRACT: This part has a STRICT target of twelve thousand (12,000) to fourteen thousand (14,000) characters including spaces. Detail how you will write extremely slow-burn, hyper-detailed, high-tension descriptions of actions, thoughts, and technical details (hacking steps, toxic mixtures, corporate battles) to ensure the output is massive and fully hits the target without any fluff.
+5. SELF-QA REFINEMENT: Mentally preview your narrative, identify and fix any weak sentences or default clichés.
 
 Example format:
 <thought>
 [Your comprehensive reasoning process and self-evaluation steps go here]
 </thought>
 [Requested content, beginning with the expected markdown tags like ### STAGE OUTPUT or ### SCRIPT_OUTPUT_START]
+
+CRITICAL WARNING: You must close the </thought> block BEFORE writing your main response. NEVER wrap your main response (like ### SCRIPT_OUTPUT_START) inside the <thought> tag! Write in high-detail, deep slow-burn style to easily reach the 12,000+ characters target length.
 `;
       }
 
@@ -107,19 +110,22 @@ Example format:
       let text = response.text || "";
       console.log(`[Vertex AI] Success with model: ${currentModel}`);
 
-      // Handle Emulated High-Thinking block extraction
-      if (text.includes("<thought>") && text.includes("</thought>")) {
-        const thoughtStart = text.indexOf("<thought>");
-        const thoughtEnd = text.indexOf("</thought>");
-        const reasoning = text.slice(thoughtStart + 9, thoughtEnd).trim();
-        console.log(`\n==================================================\n[EMULATED HIGH THINKING LOG - ${currentModel}]\n==================================================\n${reasoning}\n==================================================\n`);
-        text = text.slice(thoughtEnd + 10).trim();
-      } else if (text.includes("<thinking>") && text.includes("</thinking>")) {
-        const thoughtStart = text.indexOf("<thinking>");
-        const thoughtEnd = text.indexOf("</thinking>");
-        const reasoning = text.slice(thoughtStart + 11, thoughtEnd).trim();
-        console.log(`\n==================================================\n[EMULATED HIGH THINKING LOG - ${currentModel}]\n==================================================\n${reasoning}\n==================================================\n`);
-        text = text.slice(thoughtEnd + 11).trim();
+      // Robust Case-Insensitive Regex to extract Emulated High-Thinking blocks
+      const thoughtRegex = /<(thought|thinking)>([\s\S]*?)<\/\1>/i;
+      const thoughtMatch = text.match(thoughtRegex);
+      if (thoughtMatch) {
+         const reasoning = thoughtMatch[2].trim();
+         console.log(`\n==================================================\n[EMULATED HIGH THINKING LOG - ${currentModel}]\n==================================================\n${reasoning}\n==================================================\n`);
+         
+         const remainingText = text.replace(thoughtMatch[0], "").trim();
+         // Only replace the text if the model actually wrote a real response outside the thought block.
+         // If the model wrapped almost the entire output inside the tag, keep the original text to prevent empty generation!
+         if (remainingText.length > 200) {
+            text = remainingText;
+         } else {
+            console.log(`[Vertex AI] Warning: Output was mostly wrapped in thought tags. Slicing inner content instead.`);
+            text = reasoning;
+         }
       }
 
       return text;
@@ -3232,16 +3238,16 @@ Write the final script text for the requested part: ${partTitle} (Part Number: $
 Write only this requested part. The output should be the direct audience-facing script narration.
 
 ==================================================
-FINAL SCRIPT LENGTH CONTRACT
+FINAL SCRIPT LENGTH CONTRACT (CHARACTERS & WORD TARGETS)
 ==================================================
 
-Full final script target is one hundred twenty thousand to one hundred thirty thousand characters including spaces.
-For this individual part (${partTitle}), the target length is between twelve thousand (12,000) and fourteen thousand (14,000) characters including spaces.
+Full final script target is 120,000 to 130,000 characters including spaces (approximately 16,000 to 17,500 Russian words globally).
+For this individual part (${partTitle}), the target length is STRICTLY between twelve thousand (12,000) and fourteen thousand (14,000) characters including spaces, which corresponds to exactly sixteen hundred (1,600) to nineteen hundred (1,900) Russian words.
 
-Do not compress this part far below target.
-Do not overwrite this part far above target.
+Do not compress this part far below target. You MUST write enough detail, actions, dialogues, hacking procedures, and SEO corporate sabotage details to fully reach at least 1,600 to 1,900 words.
+Do not overwrite this part far above target (maximum 1,950 words).
 
-Focus on the approved target character range of twelve thousand to fourteen thousand characters for this part.
+Focus on writing between 1,600 and 1,900 words (twelve thousand to fourteen thousand characters) for this part.
 Every scene from ${partTitle} should receive enough writing weight to support the target.
 High-drama scenes should be expanded more.
 Transition scenes should stay efficient.
@@ -3258,14 +3264,14 @@ Expand through:
 - payoff setup.
 
 ==================================================
-STRICT PARAGRAPH LENGTH RULE
+STRICT PARAGRAPH LENGTH RULE (CHARACTERS & WORD RANGE)
 ==================================================
 
-Every normal script paragraph must be between one hundred twenty and two hundred twenty characters including spaces.
+Every normal script paragraph must be between sixteen (16) and thirty (30) words, which corresponds to exactly one hundred twenty (120) to two hundred twenty (220) characters including spaces.
 
 This rule is strict.
 
-Do not write short punch-line paragraphs under one hundred twenty characters.
+Do not write short punch-line paragraphs under 16 words (or under 120 characters).
 
 Bad:
 My hand froze.
@@ -5597,7 +5603,7 @@ Do not explain what you changed inside the script.
 
   try {
     const finalPrompt = prompt + `\n\n${firstPersonShortFormStylePatch}\n\n${antiSlopAdjectivePatch}`;
-    const cleanedScript = await generateText(finalPrompt, systemInstruction, "gemini-3.1-pro-preview");
+    const cleanedScript = await generateText(finalPrompt, systemInstruction, "gemini-3.1-pro-preview", "HIGH");
     res.json({ cleanedScript });
   } catch (err: any) {
     res.status(500).json({ error: err.message });
