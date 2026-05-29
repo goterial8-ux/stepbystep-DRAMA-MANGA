@@ -544,26 +544,24 @@ Strict Rules to Enforce:
 
 const antiSlopAdjectivePatch = `
 ==================================================
-ABSOLUTE BAN ON LITERARY BLOAT, WHILE PRESERVING STRIKING FIRST-PERSON EMOTION
+ABSOLUTE BAN ON LITERARY BLOAT, WATER, METAPHORS, AND REPETITIVE ADJECTIVES
 ==================================================
-CRITICAL DIRECTIVE: The script must not sound like third-person generic literature or a boring research report. It must be told strictly from the FIRST PERSON ("I" / "я"), focusing on the protagonist's active role. 
+CRITICAL DIRECTIVE: The script must be written strictly from the FIRST PERSON ("I" / "я"), focusing on the protagonist's active, direct role.
 
-Do NOT write a dry, unfeeling, or boring report. The character MUST have strong emotions (cynicism, cold fury, sharp sarcasms, intense sibling protective loyalty, and adrenaline). However, do NOT use "AI slop" or flowery literary bloat.
+STRICT STYLE BANS & CONSTRAINTS:
+1. **NO WATER (БЕЗ ВОДЫ):** Cut out all filler. No slow introductions, no abstract thoughts or paragraphs discussing feelings. Focus 100% on actions, events, and immediate dialogue. Every single sentence MUST move the plot forward.
+2. **NO METAPHORS (БЕЗ МЕТАФОР):** Absolutely forbid flowery or literary metaphors (e.g., "сияющий монумент чужой жадности", "цифровая кровь империи", "душа кричала от боли"). Speak directly, literally, and punchily. Use concrete, real-world actions and raw descriptions.
+3. **NO REPETITIVE OR DEFAULT ADJECTIVES (БЕЗ ОДИНАКОВЫХ ИЛИ БАНАЛЬНЫХ ПРИЛАГАТЕЛЬНЫХ):** Maximum ONE realistic adjective per noun, but prefer zero. Never repeat the same adjective in nearby paragraphs or sentences. Strip out banalities like "ужасный", "великолепный", "безупречный", "идеальный".
+4. **BALANCED TONE (MIX OF COMEDY AND SERIOUSNESS / СМЕСЬ СЕРЬЕЗНОСТИ И КОМЕДИИ):**
+   - The script must NOT be a cheap, silly parody.
+   - The basic story stakes must be treated with ABSOLUTE SERIOUSNESS (e.g., the pain and betrayal of infidelity, corporate espionage, serious database/SEO manipulation battles, protecting one's family).
+   - Balance this deep narrative weight with sharp situational irony, dry humor, clever physical actions, and rapid tech counter-attacks (hacking, smart traps, toxic substances). The character's emotional core is real, while their active responses are fast-paced, cool, and highly entertaining.
 
-STRICT RULES & BANS:
-1. **FIRST-PERSON HERO ONLY:** The narrator is the main character. Every paragraph should feel like their personal raw story. "I did this. I saw that. They thought they cornered me."
-2. **HIGH EMOTION WITHOUT WATER:** Do not make the character an emotionless robot. Express their intense anger, cynical chuckle, biting sarcasm, and desperation through actions, dialogue tags, and raw thoughts. (e.g. "My teeth clenched. I didn't care about their rules." / "My brother was shaking. I grabbed his shoulder. 'Be quiet. We're getting out.'")
-3. **NO ADVERB/ADJECTIVE PAIRINGS:** Ban wordy fluff like "предельно спокойно", "отчаянно пытался", "зловеще блеснул", "безупречно чистом", "холодный и резкий". Strip it down to sharp verbs and direct nouns.
-4. **NO TRIPLE OR BLOATED ADJECTIVES:** Maximum ONE realistic adjective per noun. Prefer zero. (e.g. "Сильный и богатый враг" -> "Враг").
-5. **NO LITERARY/FLOWERY METAPHORS:** Avoid pseudo-intellectual phrases like "сияющий монумент чужой жадности", "цифровая кровь империи", "ледяной сквозняк", "ядовитый белый луч". Speak directly and punchily.
+GOOD STYLE (First person, serious infidelity and SEO drama, high action density, zero fluff, no water, no metaphors):
+"Я сидела перед монитором. Мой бывший муж, теперь генеральный директор компании-конкурента, взломал наш сервер и обнулил выдачу нашего сайта по ключевым SEO-запросам. На его лице была ухмылка. Мой брат подошел сзади, жуя сухарики. Он нажал одну клавишу. Экран бывшего пошел красными полосами. Вся поисковая оптимизация его компании перенаправилась на страницу продажи свиных туш. Муж застыл. Мой брат хмыкнул: 'SEO-оптимизация завершена. Покупай бананы'."
 
-GOOD STYLE (First person, punchy, cold emotion, zero fluff):
-"Я вошел в холл. Мои грязные ботинки пачкали чистый мрамор. Охранники преградили дорогу. Я ухмыльнулся и показал им экран телефона с таймером. 'Через десять секунд здесь погаснет свет. Хотите проверить?'"
-
-BAD STYLE (Literature bloat - DO NOT DO THIS):
-"Я предельно спокойно вошел в просторный и стерильный холл. Мои грязные, насквозь промокшие ботинки оставляли темные уродливые следы на безупречно чистом итальянском мраморе. Рослые охранники в страхе угрожающе сделали шаг назад."
-
-Write with raw passion, intense pacing, and cold cynicism, but with minimal adjectives.
+BAD STYLE (Literature bloat, water, metaphors, same repetitive adjectives - DO NOT DO THIS):
+"Я предельно печально сидела в просторном и холодном офисе, чувствуя невероятную боль от измены моего бывшего мужа. Он забрал мое золотое сердце и растоптал его, как грязную сухую траву. Мой бывший муж, этот эгоистичный и подлый генеральный директор, злобно уничтожил все наши хрупкие поисковые позиции в безжалостном поиске. На его красивом, но холодном лице сияла отвратительная и наглая ухмылка."
 `;
 
 const highDensityWritingPatch = `
