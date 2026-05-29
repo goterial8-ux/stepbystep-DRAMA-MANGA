@@ -43,13 +43,13 @@ export interface LockedMemory {
 }
 
 export const STAGES_CONFIG = [
-  { id: 0, key: '00_idea' as const, code: '00', name: 'IDEA SETUP', description: 'Compact producer brief & core hook' },
-  { id: 1, key: '01_foundation' as const, code: '01', name: 'FOUNDATION DNA', description: 'Character logic & escalation' },
-  { id: 2, key: '02_macro' as const, code: '02', name: 'MACRO OUTLINE', description: 'Nine-part outline & pacing' },
-  { id: 3, key: '03_scenes' as const, code: '03', name: 'SCENE CARDS', description: 'Scene matrix & exit hooks' },
-  { id: 4, key: '04_script' as const, code: '04', name: 'FINAL SCRIPT', description: 'Drafting 9 parts with rule locks' },
-  { id: 5, key: '05_linter' as const, code: '05', name: 'LINTER QA', description: 'Technical check & surgical repair' },
-  { id: 6, key: '06_cleaner' as const, code: '06', name: 'VOICEOVER CLEANER', description: 'Final narration cleanup' },
+  { id: 0, key: '00_idea' as const, code: '00', name: 'IDEA SETUP', model: 'gemini-2.5-flash', description: 'Compact producer brief & core hook' },
+  { id: 1, key: '01_foundation' as const, code: '01', name: 'FOUNDATION DNA', model: 'gemini-2.5-flash', description: 'Character logic & escalation' },
+  { id: 2, key: '02_macro' as const, code: '02', name: 'MACRO OUTLINE', model: 'gemini-2.5-pro', description: 'Nine-part outline & pacing' },
+  { id: 3, key: '03_scenes' as const, code: '03', name: 'SCENE CARDS', model: 'gemini-2.5-pro', description: 'Scene matrix & exit hooks' },
+  { id: 4, key: '04_script' as const, code: '04', name: 'FINAL SCRIPT', model: 'gemini-3.1-pro-preview', description: 'Drafting 9 parts with rule locks' },
+  { id: 5, key: '05_linter' as const, code: '05', name: 'LINTER QA', model: 'gemini-2.5-pro', description: 'Technical check & surgical repair' },
+  { id: 6, key: '06_cleaner' as const, code: '06', name: 'VOICEOVER CLEANER', model: 'gemini-3.1-pro-preview', description: 'Final narration cleanup' },
 ];
 
 export const INITIAL_SCRIPT_PARTS: ScriptPart[] = [

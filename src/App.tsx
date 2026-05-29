@@ -286,6 +286,7 @@ export default function App() {
           previousPartsOutput: previousPartsText,
           avatarCommentaryEnabled: currentState.avatarCommentaryEnabled,
           competitorScriptsText,
+          competitorBlueprint: currentState.competitorBlueprint,
           feedback: partFeedback || part.feedback
         }),
       });
@@ -736,6 +737,9 @@ export default function App() {
                   <span className="text-xs font-semibold truncate group-hover:text-white">
                     {cfg.name}
                   </span>
+                  <span className="text-[9px] font-mono text-slate-500/80 group-hover:text-blue-400/70 border-t border-white/5 pt-1 mt-0.5">
+                    Model: {cfg.model}
+                  </span>
                 </button>
               );
             })}
@@ -824,9 +828,14 @@ export default function App() {
             <section className="bg-zinc-950 border border-zinc-800 rounded-xl p-5 shadow-2xl relative overflow-hidden flex flex-col gap-4">
               <div className="absolute top-0 left-0 w-1 h-full bg-amber-500"></div>
               <div className="flex flex-col gap-1">
-                <h3 className="text-sm font-bold text-white flex items-center gap-1.5">
-                  <Sparkles className="w-4 h-4 text-amber-500" />
-                  Reference Analysis Mode
+                <h3 className="text-sm font-bold text-white flex items-center justify-between">
+                  <span className="flex items-center gap-1.5">
+                    <Sparkles className="w-4 h-4 text-amber-500" />
+                    Reference Analysis Mode
+                  </span>
+                  <span className="text-[10px] font-mono text-amber-400 bg-amber-950/40 px-2 py-0.5 rounded border border-amber-900/30">
+                    Model: gemini-2.5-flash
+                  </span>
                 </h3>
                 <p className="text-xs text-zinc-500">
                   Runs before Stage 00. Analyze real competitor script styles to locked matching pacing blueprint rhythm.

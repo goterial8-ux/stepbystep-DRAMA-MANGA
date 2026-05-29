@@ -58,12 +58,41 @@ async function generateText(prompt: string, systemInstruction?: string, model: s
       console.log(`[Vertex AI] Trying model: ${currentModel}`);
       const config: any = {};
       
-      const russianInstruction = "ОБЯЗАТЕЛЬНОЕ УСЛОВИЕ: Все ответы, отчеты, сценарии и любые другие тексты должны быть написаны исключительно на русском языке.";
-      if (systemInstruction) {
-        config.systemInstruction = `${systemInstruction}\n\n${russianInstruction}`;
-      } else {
-        config.systemInstruction = russianInstruction;
+      // Determine default language instruction based on prompt cues or explicit requests
+      const isEnglishRequested = prompt.toLowerCase().includes("english") || 
+                                 prompt.toLowerCase().includes("japanese name") || 
+                                 (systemInstruction && systemInstruction.toLowerCase().includes("english"));
+      
+      const languageInstruction = isEnglishRequested
+        ? "STRICT LANGUAGE RULE: All responses, reports, scenario items, and final scripts MUST be written in English. Character names must be Japanese."
+        : "ОБЯЗАТЕЛЬНОЕ УСЛОВИЕ: Все ответы, отчеты, сценарии и любые другие тексты должны быть написаны на русском языке (если специально не запрошен английский).";
+      
+      let finalSystemInstruction = systemInstruction ? `${systemInstruction}\n\n${languageInstruction}` : languageInstruction;
+      
+      // Flash Pro Reasoning Emulator Activation!
+      if (currentModel.includes("flash")) {
+        finalSystemInstruction += `
+\n==================================================
+FLASH PRO REASONING EMULATOR (HIGH THINKING ACTIVE)
+==================================================
+To simulate Gemini 3.1 Pro premium logical planning and rule tracking, you MUST run a deep mental thread before outputting the final content.
+You MUST format your output with a clean, detailed <thought> block on the very first line of your response.
+
+Inside the <thought> block, explicitly list in English or Russian:
+1. TARGET GOAL & LANGUAGE AUDIT (English with Japanese names, Russian, etc.)
+2. STRICT BANS CHECK: No adjective bloat, no flowery metaphors, first-person "I" active narrator (not passive), sibling protective loyalty and cynical/protective emotion.
+3. LOGICAL CONTINUITY: Outline of the exact steps/sections to satisfy.
+4. SELF-QA REFINEMENT: Mentally preview your narrative, identify and fix any weak sentences or default clichés.
+
+Example format:
+<thought>
+[Your comprehensive reasoning process and self-evaluation steps go here]
+</thought>
+[Requested content, beginning with the expected markdown tags like ### STAGE OUTPUT or ### SCRIPT_OUTPUT_START]
+`;
       }
+
+      config.systemInstruction = finalSystemInstruction;
       
       if (thinkingLevel && currentModel.includes("gemini-3") && currentModel.includes("pro")) {
         config.thinkingConfig = { thinkingLevel };
@@ -75,13 +104,29 @@ async function generateText(prompt: string, systemInstruction?: string, model: s
         config,
       });
 
+      let text = response.text || "";
       console.log(`[Vertex AI] Success with model: ${currentModel}`);
-      return response.text || "";
+
+      // Handle Emulated High-Thinking block extraction
+      if (text.includes("<thought>") && text.includes("</thought>")) {
+        const thoughtStart = text.indexOf("<thought>");
+        const thoughtEnd = text.indexOf("</thought>");
+        const reasoning = text.slice(thoughtStart + 9, thoughtEnd).trim();
+        console.log(`\n==================================================\n[EMULATED HIGH THINKING LOG - ${currentModel}]\n==================================================\n${reasoning}\n==================================================\n`);
+        text = text.slice(thoughtEnd + 10).trim();
+      } else if (text.includes("<thinking>") && text.includes("</thinking>")) {
+        const thoughtStart = text.indexOf("<thinking>");
+        const thoughtEnd = text.indexOf("</thinking>");
+        const reasoning = text.slice(thoughtStart + 11, thoughtEnd).trim();
+        console.log(`\n==================================================\n[EMULATED HIGH THINKING LOG - ${currentModel}]\n==================================================\n${reasoning}\n==================================================\n`);
+        text = text.slice(thoughtEnd + 11).trim();
+      }
+
+      return text;
     } catch (error: any) {
       console.error(`Gemini call failed for model ${currentModel}:`, error?.message || error);
       lastError = error;
       
-      // Basic check for typical quota or unavail errors to trigger fallback
       const errorStr = String(error?.message || error).toLowerCase();
       const isRetryable = errorStr.includes("quota") || 
                           errorStr.includes("rate limit") || 
@@ -92,11 +137,9 @@ async function generateText(prompt: string, systemInstruction?: string, model: s
                           errorStr.includes("try again later");
       
       if (!isRetryable) {
-          // You might still want to try next model, but typically 400s means bad request.
-          // The instructions say "Если ошибка: quota exceeded ... тогда автоматически пробовать"
-          if (modelsToTry.indexOf(currentModel) !== modelsToTry.length - 1) {
-              console.log(`[Vertex AI] Error doesn't look like rate limit, but proceeding to fallback just in case...`);
-          }
+        if (modelsToTry.indexOf(currentModel) !== modelsToTry.length - 1) {
+            console.log(`[Vertex AI] Error doesn't look like rate limit, but proceeding to fallback...`);
+        }
       }
     }
   }
@@ -499,6 +542,30 @@ Strict Rules to Enforce:
 10. No Slow Build-ups: Zero slow introductions. Every single sentence MUST drive the scene forward.
 `;
 
+const antiSlopAdjectivePatch = `
+==================================================
+ABSOLUTE BAN ON LITERARY BLOAT, WHILE PRESERVING STRIKING FIRST-PERSON EMOTION
+==================================================
+CRITICAL DIRECTIVE: The script must not sound like third-person generic literature or a boring research report. It must be told strictly from the FIRST PERSON ("I" / "я"), focusing on the protagonist's active role. 
+
+Do NOT write a dry, unfeeling, or boring report. The character MUST have strong emotions (cynicism, cold fury, sharp sarcasms, intense sibling protective loyalty, and adrenaline). However, do NOT use "AI slop" or flowery literary bloat.
+
+STRICT RULES & BANS:
+1. **FIRST-PERSON HERO ONLY:** The narrator is the main character. Every paragraph should feel like their personal raw story. "I did this. I saw that. They thought they cornered me."
+2. **HIGH EMOTION WITHOUT WATER:** Do not make the character an emotionless robot. Express their intense anger, cynical chuckle, biting sarcasm, and desperation through actions, dialogue tags, and raw thoughts. (e.g. "My teeth clenched. I didn't care about their rules." / "My brother was shaking. I grabbed his shoulder. 'Be quiet. We're getting out.'")
+3. **NO ADVERB/ADJECTIVE PAIRINGS:** Ban wordy fluff like "предельно спокойно", "отчаянно пытался", "зловеще блеснул", "безупречно чистом", "холодный и резкий". Strip it down to sharp verbs and direct nouns.
+4. **NO TRIPLE OR BLOATED ADJECTIVES:** Maximum ONE realistic adjective per noun. Prefer zero. (e.g. "Сильный и богатый враг" -> "Враг").
+5. **NO LITERARY/FLOWERY METAPHORS:** Avoid pseudo-intellectual phrases like "сияющий монумент чужой жадности", "цифровая кровь империи", "ледяной сквозняк", "ядовитый белый луч". Speak directly and punchily.
+
+GOOD STYLE (First person, punchy, cold emotion, zero fluff):
+"Я вошел в холл. Мои грязные ботинки пачкали чистый мрамор. Охранники преградили дорогу. Я ухмыльнулся и показал им экран телефона с таймером. 'Через десять секунд здесь погаснет свет. Хотите проверить?'"
+
+BAD STYLE (Literature bloat - DO NOT DO THIS):
+"Я предельно спокойно вошел в просторный и стерильный холл. Мои грязные, насквозь промокшие ботинки оставляли темные уродливые следы на безупречно чистом итальянском мраморе. Рослые охранники в страхе угрожающе сделали шаг назад."
+
+Write with raw passion, intense pacing, and cold cynicism, but with minimal adjectives.
+`;
+
 const highDensityWritingPatch = `
 ==================================================
 HIGH-DENSITY WRITING / NO WATER RULE
@@ -737,7 +804,7 @@ Explain key structural rhythm patterns, but state that we MUST NOT copy the plot
 `;
 
   try {
-    const blueprint = await generateText(prompt, systemInstruction);
+    const blueprint = await generateText(prompt, systemInstruction, "gemini-2.5-flash");
     res.json({ blueprint });
   } catch (err: any) {
     res.status(500).json({ error: err.message });
@@ -750,6 +817,9 @@ app.post("/api/generate-stage", async (req, res) => {
 
   let systemInstruction = "You are ScriptForge AI, a veteran head supervisor and narrative systems architect for YouTube drama documentaries.";
   let prompt = "";
+
+  const masterPromptInjection = competitorBlueprint ? `\n==================================================\nMASTER PROMPT / REFERENCE BLUEPRINT\n==================================================\nThe user has provided the following Master Prompt:\n${competitorBlueprint}\n\nSTRICT LAW: You MUST obey the stylistic instructions, world-building rules, and narrative mechanisms specified in this Master Prompt. It is the ultimate authority for how this specific niche should be developed.\n` : "";
+
 
   const handoffIntro = `
 STRICT FORMAT RULE:
@@ -775,10 +845,12 @@ Instead, use unique surfaces (e.g., quiet auto garages, dark private docks, ship
     prompt = `
 You are 00 IDEA SETUP — RAW IDEA DEVELOPER.
 
-Your job is to take the user’s raw, messy story idea and develop it into a clear producer-ready story setup.
+Your job is to take the user’s raw, messy story idea and develop it into a clear producer-ready story setup, maintaining maximum fidelity to their requested plot.
 ${feedback ? `\nUSER CORRECTIONS/FEEDBACK FOR THIS STAGE:\n"${feedback}"\nYou MUST incorporate these corrections and rewrite the output accordingly.\n` : ""}
 
 The user may provide a rough idea, incomplete idea, emotional concept, trope, short premise, or chaotic notes.
+
+CRITICAL RULE: DO NOT CHANGE THE USER'S CORE IDEA. Do not force it into a standard "revenge/betrayal" template if they didn't ask for it. Do not invent unrequested professions for the characters. Keep the tone and details exactly aligned with what the user wrote.
 
 You must NOT write the final script.
 You must NOT create the full nine-part outline.
@@ -796,19 +868,6 @@ INPUTS
 
 RAW IDEA:
 ${rawIdea}
-
-OPTIONAL REFERENCE STYLE BLUEPRINT:
-${competitorBlueprint || "No reference style blueprint provided."}
-
-Use the Reference Style Blueprint only for:
-- pacing rhythm;
-- hook logic;
-- emotional structure;
-- retention mechanics;
-- face-slap rhythm;
-- narration direction.
-
-Do NOT copy competitor plots, scenes, openings, characters, locations, proof objects, dialogue, or final events.
 
 ==================================================
 CORE RULE
@@ -865,14 +924,7 @@ Keep each section clear and useful. Do not write long essays. Use compact bullet
 1. RAW IDEA CLEANUP
 
 Rewrite the raw idea into a clean premise.
-
-Include:
-- protagonist;
-- antagonist;
-- betrayer;
-- hidden advantage;
-- central conflict;
-- final revenge promise.
+STRICT RULE: You MUST strictly adhere to the user's provided plot. Do NOT invent unrequested characters, alternate professions, random betrayers, or alter the core genre if the user did not specify them. If the user provided a specific plot (e.g. escaping prison), flesh it out exactly as they wrote it without twisting it into a standard template.
 
 Keep it concise but clear.
 
@@ -906,39 +958,26 @@ Define:
 - why he does not win immediately;
 - what dignity he must regain.
 
-5. ANTAGONIST SETUP
+5. ANTAGONIST / OPPOSING FORCE SETUP
 
-Define:
-- public mask;
-- false belief;
-- temporary power;
+Define the main opposing force (character or system):
+- public mask or perceived strength;
 - real weakness;
-- why he underestimates the protagonist;
-- how his own actions can destroy him.
+- why they underestimate the protagonist;
+- how they will eventually be defeated.
 
-6. BETRAYER SETUP
+6. BETRAYER SETUP (IF APPLICABLE)
 
-Define:
+If the user's plot involves a betrayal, define:
 - who betrays the protagonist;
 - what they choose instead;
-- why that choice makes sense to them;
-- why it is morally ugly;
 - why they must not regret too early.
+If no betrayer is mentioned, skip this section or state N/A.
 
-7. TRUE ALLY DIRECTION
+7. TRUE ALLY / SUPPORT DIRECTION
 
-If the raw idea already includes a true ally, define their function.
-
-If not, propose one true ally type.
-
-The true ally must help through:
-- recognition;
-- testing;
-- proof;
-- credibility;
-- contrast with the betrayer.
-
-The true ally must not be only a romantic prize.
+If the raw idea already includes an ally, define their function.
+Otherwise, specify how the protagonist will handle the challenge alone or how they will gather resources/support.
 
 8. OPENING DEVELOPMENT
 
@@ -2832,18 +2871,17 @@ Stage 04 must be able to write the script from these scene cards without inventi
     return res.status(400).json({ error: "Invalid stage ID for standard generation." });
   }
 
-  let modelToUse = "gemini-3.5-flash";
+  let modelToUse = "gemini-2.5-flash";
   let thinkingLevelToUse = undefined;
   
   if (stageId === 0) {
-    modelToUse = "gemini-2.5-pro";
+    modelToUse = "gemini-2.5-flash";
   } else if (stageId === 1) {
-    modelToUse = "gemini-3.5-flash";
+    modelToUse = "gemini-2.5-flash";
   } else if (stageId === 2) {
-    modelToUse = "gemini-3.1-pro-preview";
-    thinkingLevelToUse = "HIGH";
+    modelToUse = "gemini-2.5-pro";
   } else if (stageId === 3) {
-    modelToUse = "gemini-3.5-flash";
+    modelToUse = "gemini-2.5-pro";
   }
 
   prompt += `\n\n${globalPipelineDriftPreventionPatch}\n\n${storyLogicCorePatch}`;
@@ -2852,6 +2890,10 @@ Stage 04 must be able to write the script from these scene cards without inventi
   }
   if (stageId === 3) {
     prompt += `\n\n${stage03DriftDetector}`;
+  }
+  
+  if (masterPromptInjection) {
+    prompt += `\n\n${masterPromptInjection}`;
   }
 
   try {
@@ -2890,11 +2932,14 @@ Stage 04 must be able to write the script from these scene cards without inventi
 
 // Stage 04: Generate individual part of the final script
 app.post("/api/generate-script-part", async (req, res) => {
-  const { partNumber, partTitle, sceneCardsHandoff, previousPartsOutput, avatarCommentaryEnabled, outputLanguage, competitorScriptsText, feedback } = req.body;
+  const { partNumber, partTitle, sceneCardsHandoff, previousPartsOutput, avatarCommentaryEnabled, outputLanguage, competitorScriptsText, competitorBlueprint, feedback } = req.body;
 
   if (!sceneCardsHandoff) {
     return res.status(400).json({ error: "Scene cards handoff context is required." });
   }
+  
+  const masterPromptInjection = competitorBlueprint ? `\n==================================================\nMASTER PROMPT / REFERENCE BLUEPRINT\n==================================================\nThe user has provided the following Master Prompt:\n${competitorBlueprint}\n\nSTRICT LAW: You MUST obey the stylistic instructions, world-building rules, and narrative mechanisms specified in this Master Prompt. It is the ultimate authority for how this specific niche should be developed.\n` : "";
+
 
   const systemInstruction = 
     "You are ScriptForge Finalizer, an elite long-form YouTube drama scriptwriter. " +
@@ -3943,7 +3988,11 @@ In ${outputLanguage || "Russian"}, begin writing ${partTitle} with the exact hea
 Write a concise but critical bulleted list (in Russian) summarizing this part. List exact hooks used, specific emotional beats consumed, metaphors applied, and precise plot points covered. This serves as your continuous memory to strictly PREVENT repeating the exact same stylistic tricks, face slaps, or reaction notes in subsequent parts.
 `;
 
-  let finalPrompt = prompt + `\n\n${globalPipelineDriftPreventionPatch}\n\n${storyLogicCorePatch}\n\n${globalVoiceoverCleanlinessPatch}\n\n${domainVocabularyLock}\n\n${noBlindReplacementRule}\n\n${finalScriptResidueBan}\n\n${highDensityWritingPatch}\n\n${firstPersonShortFormStylePatch}`;
+  let finalPrompt = prompt + `\n\n${globalPipelineDriftPreventionPatch}\n\n${storyLogicCorePatch}\n\n${globalVoiceoverCleanlinessPatch}\n\n${domainVocabularyLock}\n\n${noBlindReplacementRule}\n\n${finalScriptResidueBan}\n\n${highDensityWritingPatch}\n\n${firstPersonShortFormStylePatch}\n\n${antiSlopAdjectivePatch}`;
+  
+  if (masterPromptInjection) {
+      finalPrompt += `\n\n${masterPromptInjection}`;
+  }
 
   try {
     const rawResponse = await generateText(finalPrompt, systemInstruction, "gemini-3.1-pro-preview", "HIGH");
@@ -5549,7 +5598,8 @@ Do not explain what you changed inside the script.
 `;
 
   try {
-    const cleanedScript = await generateText(prompt, systemInstruction, "gemini-3.1-pro-preview");
+    const finalPrompt = prompt + `\n\n${firstPersonShortFormStylePatch}\n\n${antiSlopAdjectivePatch}`;
+    const cleanedScript = await generateText(finalPrompt, systemInstruction, "gemini-3.1-pro-preview");
     res.json({ cleanedScript });
   } catch (err: any) {
     res.status(500).json({ error: err.message });
